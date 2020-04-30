@@ -7,7 +7,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
@@ -56,21 +55,15 @@ public class PSoCCapSenseLEDService extends Service {
     // Bluetooth characteristics that we need to read/write*/
     private static BluetoothGattCharacteristic mDimmerCharacteristic; /** for dimmer characteristic */
     private static BluetoothGattCharacteristic mLedCharacteristic;
-    private static BluetoothGattCharacteristic mCapsenseCharacteristic;
-    private static BluetoothGattDescriptor mCapSenseCccd;
 
     /** UUIDs for the service and characteristics that the custom CapSenseLED service uses */
     private final static String baseUUID = "00000000-0000-1000-8000-00805f9b34f";
     private final static String capsenseLedServiceUUID = baseUUID + "0";
     public final static String ledCharacteristicUUID = baseUUID + "1";
-    public final static String capsenseCharacteristicUUID = baseUUID + "2";
     public final static String DimmerCharacteristicUUID = baseUUID + "3";
-    private final static String CccdUUID = "00002902-0000-1000-8000-00805f9b34fb";
 
     /** Variables to keep track of the LED switch state and CapSense Value */
     private static boolean mLedSwitchState = false; // attempting to change type to int
-    private static  int mDimmerState = 0; // will attempt to define dimmer state with int value
-    private static String mCapSenseValue = "-1"; /** This is the No Touch value (0xFFFF) */
 
     /** Actions used during broadcasts to the main activity */
     public final static String ACTION_BLESCAN_CALLBACK =
@@ -282,10 +275,7 @@ public class PSoCCapSenseLEDService extends Service {
      */
     public void writeDimmerCharacteristic(int value) {
         byte[] byteVal = new byte[1];
-
         switch(value){
-            //mLedSwitchState = false;
-                //mDimmerState = 0;
             case 0:
                 byteVal[0] = (byte) (0);
                 break;
@@ -589,55 +579,332 @@ public class PSoCCapSenseLEDService extends Service {
             case 100:
                 byteVal[0] = (byte) (100);
                 break;
-//            default:
-//                byteVal[0] = (byte) (0);
-//                break;
-
         }
-//        if (value==1) {
-//            byteVal[0] = (byte) (1);
-//            mLedSwitchState = true;
-//            mDimmerState = 1;
-//        }
-//        else if (value>10 && value<50) {
-//            byteVal[0] = (byte) (10);
-//            mLedSwitchState = true;
-//            mDimmerState = 10;
-//        }
-//        else if (value>51 && value<70) {
-//            byteVal[0] = (byte) (51); // this writes the value of the dimmer/led pwm signal
-//            //mLedSwitchState = true;
-//            //mDimmerState = 51;
-//        }
-//        else {
-//            byteVal[0] = (byte) (0);
-//            mLedSwitchState = false;
-//            mDimmerState = 0;
-//        }
         Log.i(TAG, "DIMMER " + value);
-        //mLedSwitchState = value; // should be percentage of duty cycle
         mLedCharacteristic.setValue(byteVal);
         mBluetoothGatt.writeCharacteristic(mLedCharacteristic);
     }
 
-    /**
-     * This method enables or disables notifications for the CapSense slider
-     *
-     * @param value Turns notifications on (1) or off (0)
-     */
-    public void writeCapSenseNotification(boolean value) {
-        /** Set notifications locally in the CCCD */
-        mBluetoothGatt.setCharacteristicNotification(mCapsenseCharacteristic, value);
-        byte[] byteVal = new byte[1];
-        if (value) {
-            byteVal[0] = 1;
-        } else {
-            byteVal[0] = 0;
+    public void readColorCharacteristic() {
+        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
+            Log.w(TAG, "BluetoothAdapter not initialized");
+            return;
         }
-        /** Write Notification value to the device */
-        Log.i(TAG, "CapSense Notification " + value);
-        mCapSenseCccd.setValue(byteVal);
-        mBluetoothGatt.writeDescriptor(mCapSenseCccd);
+        mBluetoothGatt.readCharacteristic(mDimmerCharacteristic);
+    }
+    public void writeColorCharacteristic(int value) {
+        byte[] byteVal = new byte[1];
+
+        switch(value){
+
+            case 0:
+                byteVal[0] = (byte) (0);
+                break;
+            case 1:
+                byteVal[0] = (byte) (1);
+                break;
+            case 2:
+                byteVal[0] = (byte) (2);
+                break;
+            case 3:
+                byteVal[0] = (byte) (3);
+                break;
+            case 4:
+                byteVal[0] = (byte) (4);
+                break;
+            case 5:
+                byteVal[0] = (byte) (5);
+                break;
+            case 6:
+                byteVal[0] = (byte) (6);
+                break;
+            case 7:
+                byteVal[0] = (byte) (7);
+                break;
+            case 8:
+                byteVal[0] = (byte) (8);
+                break;
+            case 9:
+                byteVal[0] = (byte) (9);
+                break;
+            case 10:
+                byteVal[0] = (byte) (10);
+                break;
+            case 11:
+                byteVal[0] = (byte) (11);
+                break;
+            case 12:
+                byteVal[0] = (byte) (12);
+                break;
+            case 13:
+                byteVal[0] = (byte) (13);
+                break;
+            case 14:
+                byteVal[0] = (byte) (14);
+                break;
+            case 15:
+                byteVal[0] = (byte) (15);
+                break;
+            case 16:
+                byteVal[0] = (byte) (16);
+                break;
+            case 17:
+                byteVal[0] = (byte) (17);
+                break;
+            case 18:
+                byteVal[0] = (byte) (18);
+                break;
+            case 19:
+                byteVal[0] = (byte) (19);
+                break;
+            case 20:
+                byteVal[0] = (byte) (20);
+                break;
+            case 21:
+                byteVal[0] = (byte) (21);
+                break;
+            case 22:
+                byteVal[0] = (byte) (22);
+                break;
+            case 23:
+                byteVal[0] = (byte) (23);
+                break;
+            case 24:
+                byteVal[0] = (byte) (24);
+                break;
+            case 25:
+                byteVal[0] = (byte) (25);
+                break;
+            case 26:
+                byteVal[0] = (byte) (26);
+                break;
+            case 27:
+                byteVal[0] = (byte) (27);
+                break;
+            case 28:
+                byteVal[0] = (byte) (28);
+                break;
+            case 29:
+                byteVal[0] = (byte) (29);
+                break;
+            case 30:
+                byteVal[0] = (byte) (30);
+                break;
+            case 31:
+                byteVal[0] = (byte) (31);
+                break;
+            case 32:
+                byteVal[0] = (byte) (32);
+                break;
+            case 33:
+                byteVal[0] = (byte) (33);
+                break;
+            case 34:
+                byteVal[0] = (byte) (34);
+                break;
+            case 35:
+                byteVal[0] = (byte) (35);
+                break;
+            case 36:
+                byteVal[0] = (byte) (36);
+                break;
+            case 37:
+                byteVal[0] = (byte) (37);
+                break;
+            case 38:
+                byteVal[0] = (byte) (38);
+                break;
+            case 39:
+                byteVal[0] = (byte) (39);
+                break;
+            case 40:
+                byteVal[0] = (byte) (40);
+                break;
+            case 41:
+                byteVal[0] = (byte) (41);
+                break;
+            case 42:
+                byteVal[0] = (byte) (42);
+                break;
+            case 43:
+                byteVal[0] = (byte) (43);
+                break;
+            case 44:
+                byteVal[0] = (byte) (44);
+                break;
+            case 45:
+                byteVal[0] = (byte) (45);
+                break;
+            case 46:
+                byteVal[0] = (byte) (46);
+                break;
+            case 47:
+                byteVal[0] = (byte) (47);
+                break;
+            case 48:
+                byteVal[0] = (byte) (48);
+                break;
+            case 49:
+                byteVal[0] = (byte) (49);
+                break;
+            case 50:
+                byteVal[0] = (byte) (50);
+                break;
+            case 51:
+                byteVal[0] = (byte) (51);
+                break;
+            case 52:
+                byteVal[0] = (byte) (52);
+                break;
+            case 53:
+                byteVal[0] = (byte) (53);
+                break;
+            case 54:
+                byteVal[0] = (byte) (54);
+                break;
+            case 55:
+                byteVal[0] = (byte) (55);
+                break;
+            case 56:
+                byteVal[0] = (byte) (56);
+                break;
+            case 57:
+                byteVal[0] = (byte) (57);
+                break;
+            case 58:
+                byteVal[0] = (byte) (58);
+                break;
+            case 59:
+                byteVal[0] = (byte) (59);
+                break;
+            case 60:
+                byteVal[0] = (byte) (60);
+                break;
+            case 61:
+                byteVal[0] = (byte) (61);
+                break;
+            case 62:
+                byteVal[0] = (byte) (62);
+                break;
+            case 63:
+                byteVal[0] = (byte) (63);
+                break;
+            case 64:
+                byteVal[0] = (byte) (64);
+                break;
+            case 65:
+                byteVal[0] = (byte) (65);
+                break;
+            case 66:
+                byteVal[0] = (byte) (66);
+                break;
+            case 67:
+                byteVal[0] = (byte) (67);
+                break;
+            case 68:
+                byteVal[0] = (byte) (68);
+                break;
+            case 69:
+                byteVal[0] = (byte) (69);
+                break;
+            case 70:
+                byteVal[0] = (byte) (70);
+                break;
+            case 71:
+                byteVal[0] = (byte) (71);
+                break;
+            case 72:
+                byteVal[0] = (byte) (72);
+                break;
+            case 73:
+                byteVal[0] = (byte) (73);
+                break;
+            case 74:
+                byteVal[0] = (byte) (74);
+                break;
+            case 75:
+                byteVal[0] = (byte) (75);
+                break;
+            case 76:
+                byteVal[0] = (byte) (76);
+                break;
+            case 77:
+                byteVal[0] = (byte) (77);
+                break;
+            case 78:
+                byteVal[0] = (byte) (78);
+                break;
+            case 79:
+                byteVal[0] = (byte) (79);
+                break;
+            case 80:
+                byteVal[0] = (byte) (80);
+                break;
+            case 81:
+                byteVal[0] = (byte) (81);
+                break;
+            case 82:
+                byteVal[0] = (byte) (82);
+                break;
+            case 83:
+                byteVal[0] = (byte) (83);
+                break;
+            case 84:
+                byteVal[0] = (byte) (84);
+                break;
+            case 85:
+                byteVal[0] = (byte) (85);
+                break;
+            case 86:
+                byteVal[0] = (byte) (86);
+                break;
+            case 87:
+                byteVal[0] = (byte) (87);
+                break;
+            case 88:
+                byteVal[0] = (byte) (88);
+                break;
+            case 89:
+                byteVal[0] = (byte) (89);
+                break;
+            case 90:
+                byteVal[0] = (byte) (90);
+                break;
+            case 91:
+                byteVal[0] = (byte) (91);
+                break;
+            case 92:
+                byteVal[0] = (byte) (92);
+                break;
+            case 93:
+                byteVal[0] = (byte) (93);
+                break;
+            case 94:
+                byteVal[0] = (byte) (94);
+                break;
+            case 95:
+                byteVal[0] = (byte) (95);
+                break;
+            case 96:
+                byteVal[0] = (byte) (96);
+                break;
+            case 97:
+                byteVal[0] = (byte) (97);
+                break;
+            case 98:
+                byteVal[0] = (byte) (98);
+                break;
+            case 99:
+                byteVal[0] = (byte) (99);
+                break;
+            case 100:
+                byteVal[0] = (byte) (100);
+                break;
+
+        }
+        Log.i(TAG, "COLOR " + value);
+        mDimmerCharacteristic.setValue(byteVal);
+        mBluetoothGatt.writeCharacteristic(mDimmerCharacteristic);
     }
 
     /**
@@ -648,17 +915,6 @@ public class PSoCCapSenseLEDService extends Service {
     public boolean getLedSwitchState() {
         return mLedSwitchState;
     }
-
-    /**
-     * This method returns the value of th CapSense Slider
-     *
-     * @return the value of the CapSense Slider
-     */
-    public String getCapSenseValue() {
-        return mCapSenseValue;
-    }
-
-
     /**
      * Implements the callback for when scanning for devices has found a device with
      * the service we are looking for.
@@ -724,15 +980,13 @@ public class PSoCCapSenseLEDService extends Service {
             /** Get just the service that we are looking for */
             BluetoothGattService mService = gatt.getService(UUID.fromString(capsenseLedServiceUUID));
             /** Get characteristics from our desired service */
-            //mDimmerCharacteristic = mService.getCharacteristic(UUID.fromString(DimmerCharacteristicUUID));
+            mDimmerCharacteristic = mService.getCharacteristic(UUID.fromString(DimmerCharacteristicUUID));
             mLedCharacteristic = mService.getCharacteristic(UUID.fromString(ledCharacteristicUUID));
-            mCapsenseCharacteristic = mService.getCharacteristic(UUID.fromString(capsenseCharacteristicUUID));
-            /** Get the CapSense CCCD */
-            mCapSenseCccd = mCapsenseCharacteristic.getDescriptor(UUID.fromString(CccdUUID));
 
             /** Read the current state of the LED from the device */
             readLedCharacteristic();
             readDimmerCharacteristic();
+            readColorCharacteristic();
 
             /** Broadcast that service/characteristic/descriptor discovery is done */
             broadcastUpdate(ACTION_SERVICES_DISCOVERED);
@@ -776,16 +1030,6 @@ public class PSoCCapSenseLEDService extends Service {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
-
-            String uuid = characteristic.getUuid().toString();
-
-            /** In this case, the only notification the apps gets is the CapSense value.
-            // If the application had additional notifications we could
-            // use a switch statement here to operate on each one separately. */
-            if (uuid.equalsIgnoreCase(capsenseCharacteristicUUID)) {
-                mCapSenseValue = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_SINT16, 0).toString();
-            }
-
             /** Notify the main activity that new data is available */
             broadcastUpdate(ACTION_DATA_RECEIVED);
         }

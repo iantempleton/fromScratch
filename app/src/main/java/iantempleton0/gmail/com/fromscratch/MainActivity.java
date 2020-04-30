@@ -27,11 +27,6 @@ import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.os.Handler;
-
-import java.text.MessageFormat;
-
 import androidx.annotation.NonNull;
 
 public class MainActivity extends AppCompatActivity {
@@ -45,21 +40,16 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Variables to access objects from the layout such as buttons, switches, values
      */
-    private static TextView mCapsenseValue;
-    private TextView brightness;
-    private TextView color;
     private ProgressBar progressBar;
     private ProgressBar progressBar1;
     private SeekBar seekBar;
     private SeekBar seekBar1;
     private static TextView textView;
+    private static TextView textView2;
     private static Button start_button;
     private static Button search_button;
-    //private static Button connect_button;
-    //private static Button discover_button;
     private static Button disconnect_button;
     private static Switch led_switch;
-    private static Switch cap_switch;
 
     /**
      * Variables to manage BLE connection
@@ -75,58 +65,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
 
-    /**
-     * Keep track of whether CapSense Notifications are on or off
-     */
-    private static boolean CapSenseNotifyState = false;
 
-
-   /** public void seekbar(){
-        seekBar1 = (SeekBar)findViewById(R.id.seekBar1);
-        textView = (TextView)findViewById(R.id.textView);
-        // casts the seekbar and textview variables
-        textView.setText("Covered: " + seekBar1.getProgress() + " / " +seekBar1.getMax());
-
-        //seekbar listener
-        seekBar1.setOnSeekBarChangeListener(
-        new SeekBar.OnSeekBarChangeListener() {
-        int progressValue;
-
-        @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            progressValue=progress;
-            //mPSoCCapSenseLedService.writeDimmerCharacteristic(progress); crash
-            //mPSoCCapSenseLedService.writeDimmerCharacteristic(progressValue); crash
-            textView.setText("Covered: " + progress + " / " +seekBar1.getMax());
-            Toast.makeText(MainActivity.this, "Seekbar in progress", Toast.LENGTH_LONG).show();
-            //mPSoCCapSenseLedService.writeDimmerCharacteristic(progress); // causes crash
-
-
-
-         //  public void onCheckedChanged(CompoundButton textView, int fingerPos) {
-     //    we want to vary the LED illumination based of fingerPos
-     //     *
-     //      * problem with this code here !!!!!!
-     //      *
-     //      *
-     //     mPSoCCapSenseLedService.writeDimmerCharacteristic(fingerPos);
-     // }
-     }
-
-        @Override public void onStartTrackingTouch(SeekBar seekBar) {
-            Toast.makeText(MainActivity.this, "Seekbar in StartTracking", Toast.LENGTH_LONG).show();
-            //mPSoCCapSenseLedService.writeDimmerCharacteristic(progressValue); crash
-     }
-
-        @Override public void onStopTrackingTouch(SeekBar seekBar) {
-            textView.setText("Covered: " + progressValue + " / " +seekBar1.getMax());
-            Toast.makeText(MainActivity.this, "Seekbar in StopTracking", Toast.LENGTH_LONG).show();
-            //mPSoCCapSenseLedService.writeDimmerCharacteristic(progressValue); crash
-
-     }
-     }
-     );
-
-     } */
 
 
     /**
@@ -148,9 +87,6 @@ public class MainActivity extends AppCompatActivity {
             mServiceConnected = true;
             mPSoCCapSenseLedService.initialize();
 
-//            mPSoCCapSenseLedService.scan(); // no crash!!!
-//            mPSoCCapSenseLedService.connect(); //  crash
-//            mPSoCCapSenseLedService.discoverServices();
         }
 
         /**
@@ -177,20 +113,19 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /** connects variables to the xml or interface of the application */
-        //mCapsenseValue = (TextView) findViewById(R.id.capsense_value);
-
         /** Set up variables for accessing buttons and slide switches */
-        start_button = (Button) findViewById(R.id.start_button);
-        search_button = (Button) findViewById(R.id.search_button);
-        //connect_button = (Button) findViewById(R.id.connect_button);
-        //discover_button = (Button) findViewById(R.id.discoverSvc_button);
-        disconnect_button = (Button) findViewById(R.id.disconnect_button);
-        led_switch = (Switch) findViewById(R.id.led_switch);
-        cap_switch = (Switch) findViewById(R.id.capsense_switch);
+        start_button = findViewById(R.id.start_button);
+        search_button = findViewById(R.id.search_button);
+        disconnect_button = findViewById(R.id.disconnect_button);
+        led_switch = findViewById(R.id.led_switch);
         textView = findViewById(R.id.textView);
-        progressBar1 = (ProgressBar)findViewById(R.id.progressBar1);
-        seekBar1 = (SeekBar)findViewById(R.id.seekBar1);
+        textView2 = findViewById(R.id.textView2);
+        progressBar1 = findViewById(R.id.progressBar1);
+        seekBar1 = findViewById(R.id.seekBar1);
+        progressBar = findViewById(R.id.progressBar);
+        seekBar = findViewById(R.id.seekBar);
+        seekBar.setEnabled(false);
+        seekBar1.setEnabled(false);
 
         seekBar1.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -208,13 +143,29 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar1) {
-//                int progress = seekBar1.getProgress();
-//                progressBar1.setProgress(progress);
-//                textView.setText("Brightness: "+progress+"%");
-//                mPSoCCapSenseLedService.writeDimmerCharacteristic(progress);
+
             }
         });
 
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                progressBar.setProgress(progress);
+                textView2.setText("Color Temperature: "+progress+"%");
+                mPSoCCapSenseLedService.writeColorCharacteristic(progress);
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
 
 
          /** Initialize service and connection state variable */
@@ -250,24 +201,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-
-
-
-        /** This will be called when the CapSense Notify On/Off switch is touched */
-        cap_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                /** Turn CapSense Notifications on/off based on the state of the switch */
-                mPSoCCapSenseLedService.writeCapSenseNotification(isChecked);
-                CapSenseNotifyState = isChecked;  /** Keep track of CapSense notification state */
-                if (isChecked) { /** Notifications are now on so text has to say "No Touch" */
-                    mCapsenseValue.setText(R.string.NoTouch);
-                } else { /** Notifications are now off so text has to say "Notify Off" */
-                    mCapsenseValue.setText(R.string.NotifyOff);
-                }
-            }
-        });
-        //seekbar(); //only used if the seekbar is outside of oncreate
     }
 
     /**This method required for Android 6.0 (Marshmallow) */
@@ -362,70 +295,7 @@ public class MainActivity extends AppCompatActivity {
         search_button.setEnabled(true);
         Log.d(TAG, "Bluetooth is Enabled");
 
-
-
-        // search function does not crash app
-        // cannot force step into if statement, is mServiceConnected true?
-        // no mServiceConnected appears to false
-        // okay let's force this if statement to be executed
-        // but first setting code back to normal and seeing how mServiceConnected is set
-      //  if (mServiceConnected) {
-        //mPSoCCapSenseLedService = ((PSoCCapSenseLEDService.LocalBinder) service).getService(); // service not recognized
-//        mServiceConnected = true;
-
-//        new CountDownTimer(15, 1000) {
-//            public void onFinish() {
-//                // When timer is finished
-//                // Execute your code here
-//                mPSoCCapSenseLedService.scan();
-//            }
-//
-//            public void onTick(long millisUntilFinished) {
-//                // millisUntilFinished    The amount of time until finished.
-//            }
-//        }.start();
-//        // roughly 65ms after scanning
-//        new CountDownTimer(80, 1000) {
-//            public void onFinish() {
-//                // When timer is finished
-//                // Execute your code here
-//                mPSoCCapSenseLedService.connect();
-//            }
-//
-//            public void onTick(long millisUntilFinished) {
-//                // millisUntilFinished    The amount of time until finished.
-//            }
-//        }.start();
-//            // needs to be roughly 260ms after connection
-//        new CountDownTimer(340, 1000) {
-//            public void onFinish() {
-//                // When timer is finished
-//                // Execute your code here
-//                mPSoCCapSenseLedService.discoverServices();
-//            }
-//
-//            public void onTick(long millisUntilFinished) {
-//                // millisUntilFinished    The amount of time until finished.
-//            }
-//        }.start();
-
-
-        // crash
-
     }
-
-    /**
-     *
-     * This method will handle the power on power of while keeping the BLE
-     * connection intact
-     *
-     * @param view
-     */
-
-    /**
-    public void powerOn(View view) {
-
-        }
 
     /**
      * This method handles the Search for Device button
@@ -439,20 +309,10 @@ public class MainActivity extends AppCompatActivity {
             mPSoCCapSenseLedService.scan();
 
         }
-//new CountDownTimer(15, 1000) {
-//        public void onFinish() {
-//            // When timer is finished
-//            // Execute your code here
-//            mPSoCCapSenseLedService.scan();
-//        }
-//
-//        public void onTick(long millisUntilFinished) {
-//            // millisUntilFinished    The amount of time until finished.
-//        }
-//    }.start();
-    // roughly 65ms after scanning
 
-        new CountDownTimer(60, 1000) {
+
+
+        new CountDownTimer(100, 1000) {
         public void onFinish() {
             // When timer is finished
             // Execute your code here
@@ -464,7 +324,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }.start();
     // needs to be roughly 260ms after connection
-        new CountDownTimer(340, 1000) {
+        new CountDownTimer(380, 1000) {
         public void onFinish() {
             // When timer is finished
             // Execute your code here
@@ -477,46 +337,6 @@ public class MainActivity extends AppCompatActivity {
     }.start();
 //
    }
-
-
-
-
-    /**
-     * This method handles the Connect to Device button
-     *
-     * @param view the view object
-     */
-
-
-//    public void connectBluetooth(View view) {
-//        mPSoCCapSenseLedService.connect();
-//
-//        /** After this we wait for the gatt callback to report the device is connected
-//         That event broadcasts a message which is picked up by the mGattUpdateReceiver */
-//
-//    }
-
-
-
-
-    /**
-     * This method handles the Discover Services and Characteristics button
-     *
-     * @param view the view object
-     */
-
-
-
-//     public void discoverServices(View view) {
-//         /** This will discover both services and characteristics*/
-//         mPSoCCapSenseLedService.discoverServices();
-//
-//         /** After this we wait for the gatt callback to report the services and characteristics
-//          That event broadcasts a message which is picked up by the mGattUpdateReceiver */
-//
-//     }
-
-
 
 
     /**
@@ -542,7 +362,8 @@ public class MainActivity extends AppCompatActivity {
                 case PSoCCapSenseLEDService.ACTION_BLESCAN_CALLBACK:
                     /** Disable the search button and enable the connect button */
                     search_button.setEnabled(false);
-                    //connect_button.setEnabled(true);
+                    seekBar.setEnabled(false);
+                    seekBar1.setEnabled(false);
                     break;
 
                 case PSoCCapSenseLEDService.ACTION_CONNECTED:
@@ -550,8 +371,10 @@ public class MainActivity extends AppCompatActivity {
                     /* action when sending Capsense notifications */
                     if (!mConnectState) {
                         /** Disable the connect button, enable the discover services and disconnect buttons */
-                        //connect_button.setEnabled(false);
-                        //discover_button.setEnabled(true);
+                        search_button.setEnabled(false);
+                        seekBar.setEnabled(true);
+                        seekBar1.setEnabled(true);
+                        led_switch.setEnabled(true);
                         disconnect_button.setEnabled(true);
                         mConnectState = true;
                         Log.d(TAG, "Connected to Device");
@@ -560,22 +383,20 @@ public class MainActivity extends AppCompatActivity {
                 case PSoCCapSenseLEDService.ACTION_DISCONNECTED:
                     /** Disable the disconnect, discover svc, discover char button, and enable the search button */
                     disconnect_button.setEnabled(false);
-                   //discover_button.setEnabled(false);
+                    seekBar.setEnabled(false);
+                    seekBar1.setEnabled(false);
                     search_button.setEnabled(true);
                     /** Turn off and disable the LED and CapSense switches */
                     led_switch.setChecked(false);
                     led_switch.setEnabled(false);
-                    cap_switch.setChecked(false);
-                    cap_switch.setEnabled(false);
                     mConnectState = false;
                     Log.d(TAG, "Disconnected");
                     break;
                 case PSoCCapSenseLEDService.ACTION_SERVICES_DISCOVERED:
-                    /** Disable the discover services button */
-                    //discover_button.setEnabled(false);
+                    seekBar.setEnabled(true);
+                    seekBar1.setEnabled(true);
                     /** Enable the LED and CapSense switches */
                     led_switch.setEnabled(true);
-                    cap_switch.setEnabled(true);
                     Log.d(TAG, "Services Discovered");
                     break;
                 case PSoCCapSenseLEDService.ACTION_DATA_RECEIVED:
@@ -586,17 +407,7 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         led_switch.setChecked(false);
                     }
-                    /** Get CapSense Slider Value */
-                    String CapSensePos = mPSoCCapSenseLedService.getCapSenseValue();
-                    if (CapSensePos.equals("-1")) {  /** No Touch returns 0xFFFF which is -1 */
-                        if (!CapSenseNotifyState) { /** Notifications are off */
-//                            mCapsenseValue.setText(R.string.NotifyOff);
-                        } else { /** Notifications are on but there is no finger on the slider */
-                            mCapsenseValue.setText(R.string.NoTouch);
-                        }
-                    } else { /** Valid CapSense value is returned */
-                        mCapsenseValue.setText(CapSensePos);
-                    }
+
                 default:
                     break;
             }
